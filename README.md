@@ -9,9 +9,9 @@ The KNN algorithm is a simple, yet powerful machine learning technique for class
 1. Caculate the distance from new data poinnt(data needed classficated) to the data points in X_train
 2. Sort these distances in ascending order(from small to large)
 3. Get K nearest data point(s)
-4. Count the number of times the corresponding labels appear that first gap. Choose the label that appears more often (uniform). With major voting in KNN we can calculate the weights of the points which are nearest then chose point
+4. Count the number of times the corresponding labels appear that first gap. Choose the label that appears more often (uniform). With major voting in KNN we can calculate the weights of the points which are nearest then choose point
 which has the largest weight.
-### 3.1. How to calculate the distancedistance
+### 3.1. How to calculate the distance
 ![distance](distance.png)
 ##### Formula:
 ![for](dis_fo.jpg)
@@ -36,14 +36,23 @@ l2_distance_vec = np.sqrt(np.sum((x_star - x_0) ** 2))
 ```
 
 ## Overview of the Repository
-The repo contain 2 parts: 
+The repo contains 2 parts: 
 * knn_base.py to implement KNN algorithm and handle data
 * app.py to run program on website(localhost) by streamlit
 * data source: [Student Exam Results dataset](https://www.kaggle.com/datasets/jayantiprasad/student-exam-results-dataset) 
 
 
 ## How to install
+##### Download project
 ```
 git clone https://github.com/letiendat24/classify_student
+```
+##### Install streamlit library
+```
+	pip install streamlit
+```
+#### Run program
+```
+	streamlit run app.py
 ```
 
