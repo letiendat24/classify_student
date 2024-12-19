@@ -10,7 +10,7 @@ class KNN:
 
         Args:
             k(int) : the number of neighbor (nearest dot)
-            weight (str): use to chose 2 options (uniforms and ) for weight calculation
+            weight (str): use to chose 2 options (uniforms and distance) for weight calculation
         """
         self.k = k
         self.X_train = None
@@ -37,22 +37,14 @@ class KNN:
                 X_test: features data 
 
             Return:
-                preds:list(int): list of predicted label
-            
-        
+                preds(np.ndarray): list of predicted label
         """
-        preds = []
-        for i, x in enumerate(X_test):
-            # print(f"x_test_{i}: {x}")
-            preds.append(self._predict_one(x))
-        return preds
+        # preds = []
+        # for x in enumerate(X_test):
+        return np.array([self._predict_one(x) for x in X_test])
         
         
     def _euclidean_distance(self, p, q):
-        """
-
-        
-        """
         return np.sqrt(np.sum((p - q) ** 2))
 
     def _manhattan_distance(self, p, q):
@@ -62,63 +54,49 @@ class KNN:
 
 
 #tinh kc cua x voi cac phantu x train
-    def _predict_one(self, x):
-        _distances = [self._euclidean_distance(x, x_i) for x_i in self.X_train]
-
-        k_index = np.argsort(_distances)[:self.k]
-        k_nearest_labels = []
-        k_nearest_distances = []
-        for i in k_index:
-            k_nearest_labels.append(self.y_train[i])
-            k_nearest_distances.append(_distances[i])   
-        _distances = [self._euclidean_distance(x, x_i) for x_i in self.X_train]
-        k_index = np.argsort(_distances)[:self.k]
-        k_nearest_labels = []
-        k_nearest_distances = []
-        for i in k_index:
-            k_nearest_labels.append(self.y_train[i])
-            k_nearest_distances.append(_distances[i])
-
-    # Tính trọng số dựa trên phương pháp đã chọn
-        if self.weight == 'distance':
-            weights = []
-            for dist in k_nearest_distances:
-                if dist == 0:
-                    weights.append(1e9)  # Tránh chia cho 0, gán trọng số rất lớn
-                else:
-                    weights.append(1 / dist)
-            # print(print(f"Distance weights: {weights}"))
+    def _predict_one(self, x:np.ndarray):
+        """
+            Handle sorting and choosing labelslabels
+            Args: 
+                x: a tube in X_test
+            
+            Return:
+                predictation(int): predicted label
         
-        # Đếm trọng số của từng nhãn
-            label_weights = {}
-            for idx in range(len(k_nearest_labels)):
-                label = k_nearest_labels[idx]
-                weight = weights[idx]
-                if label in label_weights:
-                    label_weights[label] += weight
-                else:
-                    label_weights[label] = weight
+        """  
+        _distances =  np.array([self._euclidean_distance(x, x_i) for x_i in self.X_train])
         
-        # Lấy nhãn có trọng số lớn nhất
-            prediction = max(label_weights, key=label_weights.get)
+        #lay ra chi so cua K diem gan nhat
+        k_index = np.argsort(_distances)[:self.k]
+
+        #lay ra K labels tuong ung
+        k_nearest_labels = self.y_train[k_index]
+        
+        #lay ra K khoang cach gan nhat
+        k_nearest_distances = _distances[k_index]
+
+        #tinh trong so
+        if self.weight == "distance":
+        #tao mang luu trong so cho tung nhan
+            unique_labels = np.unique(k_nearest_labels)
+            label_weights = np.zeros(unique_labels.shape)
+
+            for i , label in enumerate(unique_labels):
+                label_filter = (label == k_nearest_labels)
+                label_distance = k_nearest_distances[label_filter]
+                
+                weights = np.sum(1 /label_distance)
+                label_weights[i] = weights
+            #tim label co trong so max
+            max_weight_index = np.argmax(label_weights)
+            predictation = unique_labels[max_weight_index]
         else:
-        # Nếu weight là 'uniform', tính nhãn phổ biến nhất
-            most_common = Counter(k_nearest_labels).most_common(1)
-            prediction = most_common[0][0]
-        return prediction
-  
+            most_common = Counter(k_nearest_labels).most_common()
+            predictation = most_common[0][0]
+        return predictation
+        
+        
     
-
-
-
-
-
-# X_data = result_data[result_data.columns[1:8]]
-# y_data = result_data.columns[8:11]
-
-# print(X_data)
-# print(y_data)
-
 f = open('D:\\python\\lab\\project\\results.csv', 'r')
 result_data = csv.reader(f)
 result_data_str = np.array(list(result_data))
@@ -131,28 +109,21 @@ result_data_ = result_data_str.astype(int)
 
 X_data = np.delete(result_data_,[7,8], 1)
 y_data = np.delete(result_data_,[0,1,2,3,4,5,6,7], 1).flatten()
-# y_data = np.array(y_data_tem, ndmin=1)
-# print(X_data)
-# print(y_data)
-# y_train = X_data
-# y_test = y_data
-# print(X_data)
-# print(y_data_tem)
-# print(result_data_)
-# for i in range(1,100):
-X_train, X_test, y_train, y_test = train_test_split(X_data, y_data, test_size = 0.5, random_state = 42) #random_state=2024
-    # print(f"test thu{i}")
-    # for j in range(1, 31):
 
-# for i in range (1, 25):
 
-knn = KNN(k=10,weight='distance') #distance
-knn.fit(X_train, y_train)
-preds = knn.predict(X_test)
-total_correct = np.sum(y_test == preds)
-accuracy = (total_correct / len(y_test))*100
-error = 1 - accuracy
-print(f"KNN model's accuracy: {accuracy:.2f}%")
+X_train, X_test, y_train, y_test = train_test_split(X_data, y_data, test_size = 0.3, random_state = 42) #random_state=2024
+
+
+for i in range (1, 25):
+
+    knn = KNN(k=i, weight='uniforms') #distance uniforms
+    knn.fit(X_train, y_train)
+    preds = knn.predict(X_test)
+    total_correct = np.sum(y_test == preds)
+    accuracy = (total_correct / len(y_test))*100
+    error = 1 - accuracy
+    print(f"KNN {i} model's accuracy: {accuracy:.2f}%")
+    
 
     
 # print(f"KNN  model's error: {error:.4f} | Total incorrect predictions: {len(y_test) - total_correct}")
